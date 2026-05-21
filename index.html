@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal — Gil Aron</title>
+  <style>
+    :root {
+      --bg: #F5F5F7;
+      --surface: #FFFFFF;
+      --border: #E5E5EA;
+      --text: #1D1D1F;
+      --text-secondary: #6E6E73;
+      --blue: #007AFF;
+      --green: #34C759;
+      --orange: #FF9500;
+      --red: #FF3B30;
+      --blue-light: #E8F4FF;
+      --green-light: #E8FAF0;
+      --orange-light: #FFF4E6;
+      --red-light: #FFE8E6;
+      --radius: 14px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    header h1 {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Month nav */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0 14px;
+    }
+
+    .month-nav h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    .nav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--text);
+      line-height: 1;
+      transition: background 0.12s;
+      user-select: none;
+    }
+
+    .nav-btn:hover { background: var(--bg); }
+    .nav-btn:disabled { opacity: 0.25; cursor: default; }
+
+    /* Progress */
+    .progress-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .progress-count {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .progress-warning {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    .progress-warning.ok { color: var(--green); }
+
+    .progress-bar-bg {
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--orange);
+      transition: width 0.4s ease, background 0.3s;
+    }
+
+    .progress-bar-fill.full { background: var(--green); }
+
+    /* Calendar */
+    .calendar {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 6px;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+
+    .calendar-day {
+      border-radius: 9px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.12s;
+      padding: 6px 2px 5px;
+      min-height: 46px;
+    }
+
+    .calendar-day:hover:not(.empty) { background: var(--bg); }
+    .calendar-day.empty { cursor: default; }
+
+    .calendar-day.today { background: var(--blue-light); }
+    .calendar-day.today:hover { background: #d8ecff; }
+
+    .calendar-day.today .day-number {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .calendar-day.has-session { cursor: pointer; }
+
+    .day-number {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .day-dots {
+      display: flex;
+      gap: 2px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+      min-height: 7px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .dot-agendada { background: var(--blue); }
+    .dot-feita { background: var(--green); }
+    .dot-remarcada { background: var(--orange); }
+
+    /* Sessions list */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin: 6px 0 10px;
+    }
+
+    .session-item {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      margin-bottom: 8px;
+    }
+
+    .session-item:active { transform: scale(0.985); box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+
+    .session-indicator {
+      width: 4px;
+      height: 36px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .ind-agendada { background: var(--blue); }
+    .ind-feita { background: var(--green); }
+    .ind-remarcada { background: var(--orange); }
+
+    .session-info { flex: 1; min-width: 0; }
+
+    .session-date {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+
+    .session-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+    }
+
+    .badge-agendada { background: var(--blue-light); color: var(--blue); }
+    .badge-feita { background: var(--green-light); color: #1a8a3a; }
+    .badge-remarcada { background: var(--orange-light); color: #b86e00; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 36px 16px;
+      color: var(--text-secondary);
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .empty-icon { font-size: 28px; margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    /* FAB */
+    .fab {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      font-size: 26px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 122, 255, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      line-height: 1;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+
+    .fab:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(0,122,255,0.3); }
+
+    /* Modal */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .overlay.hidden { display: none; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 22px 22px 0 0;
+      padding: 12px 20px 36px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .handle {
+      width: 36px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 20px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-input:focus { border-color: var(--blue); background: white; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .status-opt {
+      padding: 11px 8px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.12s;
+      user-select: none;
+    }
+
+    .status-opt.sel-agendada { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .status-opt.sel-feita { border-color: var(--green); background: var(--green-light); color: #1a8a3a; }
+    .status-opt.sel-remarcada { border-color: var(--orange); background: var(--orange-light); color: #b86e00; }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.12s;
+    }
+
+    .btn:active { opacity: 0.75; }
+    .btn-cancel { background: var(--bg); color: var(--text); }
+    .btn-save { background: var(--blue); color: white; }
+    .btn-delete { background: var(--red-light); color: var(--red); flex: 0 0 auto; padding: 15px 18px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Personal Training</h1>
+    <p>Gil Aron · 12 aulas por mês</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="month-nav">
+    <button class="nav-btn" id="btnPrev" onclick="changeMonth(-1)">‹</button>
+    <h2 id="monthTitle"></h2>
+    <button class="nav-btn" id="btnNext" onclick="changeMonth(1)">›</button>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-header">
+      <span class="progress-count" id="progCount"></span>
+      <span class="progress-warning" id="progWarn"></span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progFill"></div>
+    </div>
+  </div>
+
+  <div class="calendar">
+    <div class="calendar-weekdays">
+      <div class="calendar-weekday">Dom</div>
+      <div class="calendar-weekday">Seg</div>
+      <div class="calendar-weekday">Ter</div>
+      <div class="calendar-weekday">Qua</div>
+      <div class="calendar-weekday">Qui</div>
+      <div class="calendar-weekday">Sex</div>
+      <div class="calendar-weekday">Sáb</div>
+    </div>
+    <div class="calendar-grid" id="calGrid"></div>
+  </div>
+
+  <div id="listSection"></div>
+</div>
+
+<button class="fab" onclick="openAdd()">+</button>
+
+<div class="overlay hidden" id="overlay" onclick="handleOverlay(event)">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title" id="modalTitle"></div>
+
+    <div class="form-group">
+      <label class="form-label">Data</label>
+      <input type="date" class="form-input" id="fDate" min="2026-05-01" max="2026-12-31">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Horário</label>
+      <input type="time" class="form-input" id="fTime">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <div class="status-grid">
+        <div class="status-opt" id="opt-agendada" onclick="pickStatus('agendada')">
+          <div class="status-dot dot-agendada"></div>Agendada
+        </div>
+        <div class="status-opt" id="opt-feita" onclick="pickStatus('feita')">
+          <div class="status-dot dot-feita"></div>Feita
+        </div>
+        <div class="status-opt" id="opt-remarcada" onclick="pickStatus('remarcada')">
+          <div class="status-dot dot-remarcada"></div>Remarcada
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observação</label>
+      <input type="text" class="form-input" id="fNotes" placeholder="ex: remarcada do dia 22">
+    </div>
+
+    <div class="actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'personal_gil_2026';
+  const TARGET = 12;
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const WDAYS  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  const SEED = [
+    { id:1,  date:'2026-05-21', time:'05:00', status:'agendada', notes:'' },
+    { id:2,  date:'2026-05-23', time:'05:00', status:'agendada', notes:'' },
+    { id:3,  date:'2026-05-25', time:'05:00', status:'agendada', notes:'' },
+    { id:4,  date:'2026-05-27', time:'05:00', status:'agendada', notes:'' },
+    { id:5,  date:'2026-05-29', time:'05:00', status:'agendada', notes:'' },
+    { id:6,  date:'2026-06-02', time:'05:00', status:'agendada', notes:'' },
+    { id:7,  date:'2026-06-04', time:'05:00', status:'agendada', notes:'' },
+    { id:8,  date:'2026-06-06', time:'09:00', status:'agendada', notes:'Sábado' },
+    { id:9,  date:'2026-06-08', time:'05:00', status:'agendada', notes:'' },
+    { id:10, date:'2026-06-10', time:'05:00', status:'agendada', notes:'' },
+  ];
+
+  let sessions = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
+  let curMonth = Math.max(4, Math.min(11, new Date().getMonth()));
+  let curYear  = 2026;
+  let editId   = null;
+  let selStatus = 'agendada';
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(sessions)); }
+
+  function monthSessions() {
+    return sessions
+      .filter(s => { const d = new Date(s.date+'T12:00:00'); return d.getMonth()===curMonth && d.getFullYear()===curYear; })
+      .sort((a,b) => a.date.localeCompare(b.date));
+  }
+
+  function isToday(ds) {
+    const t = new Date(); const d = new Date(ds+'T12:00:00');
+    return t.getDate()===d.getDate() && t.getMonth()===d.getMonth() && t.getFullYear()===d.getFullYear();
+  }
+
+  function fmtDate(ds) {
+    const d = new Date(ds+'T12:00:00');
+    return `${WDAYS[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+
+  function fmtTime(t) { return t.slice(0,5)+'h'; }
+
+  function render() {
+    // Header
+    document.getElementById('monthTitle').textContent = MONTHS[curMonth] + ' ' + curYear;
+    document.getElementById('btnPrev').disabled = curMonth <= 4;
+    document.getElementById('btnNext').disabled = curMonth >= 11;
+
+    // Progress
+    const ms = monthSessions();
+    const cnt = ms.length;
+    const miss = Math.max(0, TARGET - cnt);
+    const pct = Math.min(100, (cnt/TARGET)*100);
+    document.getElementById('progCount').textContent = `${cnt} de ${TARGET} aulas`;
+    const warn = document.getElementById('progWarn');
+    const fill = document.getElementById('progFill');
+    if (miss > 0) {
+      warn.textContent = `⚠ Falta agendar ${miss}`;
+      warn.className = 'progress-warning';
+      fill.className = 'progress-bar-fill';
+    } else {
+      warn.textContent = '✓ Mês completo';
+      warn.className = 'progress-warning ok';
+      fill.className = 'progress-bar-fill full';
+    }
+    fill.style.width = pct + '%';
+
+    // Calendar
+    const firstDay = new Date(curYear, curMonth, 1).getDay();
+    const lastDay  = new Date(curYear, curMonth+1, 0).getDate();
+    const byDay = {};
+    ms.forEach(s => { const d = new Date(s.date+'T12:00:00').getDate(); (byDay[d]=byDay[d]||[]).push(s); });
+
+    let html = '';
+    for (let i=0; i<firstDay; i++) html += '<div class="calendar-day empty"></div>';
+    for (let d=1; d<=lastDay; d++) {
+      const ds = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const ss = byDay[d]||[];
+      const cls = ['calendar-day', isToday(ds)?'today':'', ss.length?'has-session':''].filter(Boolean).join(' ');
+      const firstId = ss.length ? ss[0].id : null;
+      html += `<div class="${cls}" onclick="dayClick('${ds}',${firstId})">`;
+      html += `<div class="day-number">${d}</div>`;
+      html += '<div class="day-dots">';
+      ss.forEach(s => { html += `<div class="dot dot-${s.status}"></div>`; });
+      html += '</div></div>';
+    }
+    document.getElementById('calGrid').innerHTML = html;
+
+    // List
+    const sec = document.getElementById('listSection');
+    if (ms.length === 0) {
+      sec.innerHTML = `<div class="section-label">${MONTHS[curMonth]}</div>
+        <div class="empty-state"><div class="empty-icon">📅</div><p>Nenhuma aula agendada</p></div>`;
+      return;
+    }
+    sec.innerHTML = `<div class="section-label">Aulas de ${MONTHS[curMonth]}</div>` +
+      ms.map(s => `
+        <div class="session-item" onclick="openEdit(${s.id})">
+          <div class="session-indicator ind-${s.status}"></div>
+          <div class="session-info">
+            <div class="session-date">${fmtDate(s.date)}</div>
+            <div class="session-meta">${fmtTime(s.time)}${s.notes?' · '+s.notes:''}</div>
+          </div>
+          <span class="badge badge-${s.status}">${s.status.charAt(0).toUpperCase()+s.status.slice(1)}</span>
+        </div>`).join('');
+  }
+
+  function changeMonth(dir) {
+    curMonth = Math.max(4, Math.min(11, curMonth+dir));
+    render();
+  }
+
+  function dayClick(ds, id) {
+    if (id) openEdit(id); else openAdd(ds);
+  }
+
+  function openAdd(ds) {
+    editId = null;
+    selStatus = 'agendada';
+    document.getElementById('modalTitle').textContent = 'Nova Aula';
+    document.getElementById('fDate').value = ds || `${curYear}-${String(curMonth+1).padStart(2,'0')}-01`;
+    document.getElementById('fTime').value = '05:00';
+    document.getElementById('fNotes').value = '';
+    setStatusUI('agendada');
+    document.getElementById('modalActions').innerHTML = `
+      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-save" onclick="saveSession()">Salvar</button>`;
+    document.getElementById('overlay').classList.remove('hidden');
+  }
+
+  function openEdit(id) {
+    const s = sessions.find(x=>x.id===id);
+    if (!s) return;
+    editId = id;
+    selStatus = s.status;
+    document.getElementById('modalTitle').textContent = 'Editar Aula';
+    document.getElementById('fDate').value = s.date;
+    document.getElementById('fTime').value = s.time;
+    document.getElementById('fNotes').value = s.notes||'';
+    setStatusUI(s.status);
+    document.getElementById('modalActions').innerHTML = `
+      <button class="btn btn-delete" onclick="delSession(${id})">Excluir</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-save" onclick="saveSession()">Salvar</button>`;
+    document.getElementById('overlay').classList.remove('hidden');
+  }
+
+  function closeModal() { document.getElementById('overlay').classList.add('hidden'); }
+
+  function handleOverlay(e) { if (e.target===document.getElementById('overlay')) closeModal(); }
+
+  function pickStatus(st) { selStatus=st; setStatusUI(st); }
+
+  function setStatusUI(st) {
+    ['agendada','feita','remarcada'].forEach(s => {
+      const el = document.getElementById('opt-'+s);
+      el.className = 'status-opt' + (s===st ? ' sel-'+s : '');
+    });
+  }
+
+  function saveSession() {
+    const date  = document.getElementById('fDate').value;
+    const time  = document.getElementById('fTime').value || '05:00';
+    const notes = document.getElementById('fNotes').value.trim();
+    if (!date) return;
+
+    if (editId) {
+      const i = sessions.findIndex(s=>s.id===editId);
+      if (i>=0) sessions[i] = { id:editId, date, time, status:selStatus, notes };
+    } else {
+      const newId = (sessions.reduce((m,s)=>Math.max(m,s.id),0))+1;
+      sessions.push({ id:newId, date, time, status:selStatus, notes });
+    }
+
+    save();
+    closeModal();
+    const d = new Date(date+'T12:00:00');
+    curMonth = d.getMonth();
+    render();
+  }
+
+  function delSession(id) {
+    if (!confirm('Excluir esta aula?')) return;
+    sessions = sessions.filter(s=>s.id!==id);
+    save();
+    closeModal();
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
