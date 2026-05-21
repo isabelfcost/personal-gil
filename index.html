@@ -119,8 +119,8 @@
 
     .progress-warning {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--orange);
+      font-weight: 500;
+      color: var(--text-secondary);
     }
 
     .progress-warning.ok { color: var(--green); }
@@ -582,20 +582,19 @@
     document.getElementById('btnPrev').disabled = curMonth <= 4;
     document.getElementById('btnNext').disabled = curMonth >= 11;
 
-    // Progress
-    const ms = monthSessions();
-    const cnt = ms.length;
+    // Progress — global (todas as aulas, todos os meses)
+    const cnt = sessions.length;
     const miss = Math.max(0, TARGET - cnt);
     const pct = Math.min(100, (cnt/TARGET)*100);
-    document.getElementById('progCount').textContent = `${cnt} de ${TARGET} aulas`;
+    document.getElementById('progCount').textContent = `${cnt} aulas agendadas`;
     const warn = document.getElementById('progWarn');
     const fill = document.getElementById('progFill');
     if (miss > 0) {
-      warn.textContent = `⚠ Falta agendar ${miss}`;
+      warn.textContent = `faltam ${miss} para completar`;
       warn.className = 'progress-warning';
       fill.className = 'progress-bar-fill';
     } else {
-      warn.textContent = '✓ Mês completo';
+      warn.textContent = '✓ pacote completo';
       warn.className = 'progress-warning ok';
       fill.className = 'progress-bar-fill full';
     }
