@@ -531,7 +531,7 @@
 </div>
 
 <script>
-  const KEY = 'personal_gil_2026';
+  const DB_URL = 'https://personal-gil-default-rtdb.firebaseio.com/sessions.json';
   const TARGET = 12;
   const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -550,13 +550,31 @@
     { id:10, date:'2026-06-10', time:'05:00', status:'agendada', notes:'' },
   ];
 
-  let sessions = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
+  let sessions = [];
   let curMonth = Math.max(4, Math.min(11, new Date().getMonth()));
   let curYear  = 2026;
   let editId   = null;
   let selStatus = 'agendada';
 
-  function save() { localStorage.setItem(KEY, JSON.stringify(sessions)); }
+  async function loadFromDB() {
+    try {
+      const res = await fetch(DB_URL);
+      const data = await res.json();
+      if (data && Array.isArray(data) && data.length > 0) return data;
+      await saveToDB(SEED);
+      return SEED;
+    } catch(e) { return SEED; }
+  }
+
+  async function saveToDB(data) {
+    try {
+      await fetch(DB_URL, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+    } catch(e) { console.error('Erro ao salvar:', e); }
+  }
 
   function monthSessions() {
     return sessions
@@ -694,7 +712,7 @@
     });
   }
 
-  function saveSession() {
+  async function saveSession() {
     const date  = document.getElementById('fDate').value;
     const time  = document.getElementById('fTime').value || '05:00';
     const notes = document.getElementById('fNotes').value.trim();
@@ -708,22 +726,23 @@
       sessions.push({ id:newId, date, time, status:selStatus, notes });
     }
 
-    save();
     closeModal();
     const d = new Date(date+'T12:00:00');
     curMonth = d.getMonth();
     render();
+    await saveToDB(sessions);
   }
 
-  function delSession(id) {
+  async function delSession(id) {
     if (!confirm('Excluir esta aula?')) return;
     sessions = sessions.filter(s=>s.id!==id);
-    save();
     closeModal();
     render();
+    await saveToDB(sessions);
   }
 
-  render();
+  // Carrega do Firebase e renderiza
+  loadFromDB().then(data => { sessions = data; render(); });
 </script>
 </body>
 </html>
