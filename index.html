@@ -583,6 +583,7 @@
     document.getElementById('btnNext').disabled = curMonth >= 11;
 
     // Progress — global (todas as aulas, todos os meses)
+    const ms = monthSessions();
     const cnt = sessions.length;
     const miss = Math.max(0, TARGET - cnt);
     const pct = Math.min(100, (cnt/TARGET)*100);
