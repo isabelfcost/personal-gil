@@ -600,22 +600,25 @@
     document.getElementById('btnPrev').disabled = curMonth <= 4;
     document.getElementById('btnNext').disabled = curMonth >= 11;
 
-    // Progress — global (todas as aulas, todos os meses)
+    // Progress — pacote atual de 12
     const ms = monthSessions();
-    const cnt = sessions.length;
-    const miss = Math.max(0, TARGET - cnt);
-    const pct = Math.min(100, (cnt/TARGET)*100);
-    document.getElementById('progCount').textContent = `${cnt} aulas agendadas`;
+    const total = sessions.length;
+    const inPkg = total % TARGET; // posição dentro do pacote atual
+    const isComplete = total > 0 && inPkg === 0;
+    const current = isComplete ? TARGET : inPkg;
+    const miss = isComplete ? 0 : TARGET - current;
+    const pct = (current / TARGET) * 100;
+    document.getElementById('progCount').textContent = `${current}/12 aulas`;
     const warn = document.getElementById('progWarn');
     const fill = document.getElementById('progFill');
-    if (miss > 0) {
-      warn.textContent = `faltam ${miss} para completar`;
-      warn.className = 'progress-warning';
-      fill.className = 'progress-bar-fill';
-    } else {
+    if (isComplete) {
       warn.textContent = '✓ pacote completo';
       warn.className = 'progress-warning ok';
       fill.className = 'progress-bar-fill full';
+    } else {
+      warn.textContent = `falta agendar ${miss}`;
+      warn.className = 'progress-warning';
+      fill.className = 'progress-bar-fill';
     }
     fill.style.width = pct + '%';
 
