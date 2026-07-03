@@ -199,6 +199,15 @@
     .status-opt.sel-feita { border-color: var(--green); background: var(--green-light); color: #1a8a3a; }
     .status-opt.sel-remarcada { border-color: var(--orange); background: var(--orange-light); color: #b86e00; }
     .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+    /* Muscle group chips */
+    .group-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .group-chip {
+      padding: 9px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.12s; user-select: none; background: var(--bg);
+      font-family: inherit;
+    }
+    .group-chip.sel { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
     .actions { display: flex; gap: 10px; margin-top: 22px; }
     .btn {
       flex: 1; padding: 15px; border-radius: 12px; font-size: 16px;
@@ -295,8 +304,17 @@
       </div>
     </div>
     <div class="form-group">
+      <label class="form-label">Grupo Muscular</label>
+      <div class="group-chips">
+        <button class="group-chip" id="grp-superior"  onclick="pickGroup('Superior')">Superior</button>
+        <button class="group-chip" id="grp-inferior"  onclick="pickGroup('Inferior')">Inferior</button>
+        <button class="group-chip" id="grp-fullbody"  onclick="pickGroup('Full Body')">Full Body</button>
+        <button class="group-chip" id="grp-cardio"    onclick="pickGroup('Cardio')">Cardio</button>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="form-label">Observacao</label>
-      <input type="text" class="form-input" id="fNotes" placeholder="ex: superiores, inferiores...">
+      <input type="text" class="form-input" id="fNotes" placeholder="anotacoes livres sobre o treino...">
     </div>
     <div class="actions" id="modalActions"></div>
   </div>
@@ -331,6 +349,7 @@
   let curYear  = 2026;
   let editId   = null;
   let selStatus = 'agendada';
+  let selGroup  = '';
 
   // ── Firebase ────────────────────────────────────────────────────────
   async function dbGet(path) {
@@ -513,7 +532,7 @@
               <div class="session-indicator ind-${s.status}"></div>
               <div class="session-info">
                 <div class="session-date">${fmtDate(s.date)}</div>
-                <div class="session-meta">${fmtTime(s.time)}${s.notes?' · '+s.notes:''}</div>
+                <div class="session-meta">${fmtTime(s.time)}${s.group?' · '+s.group:''}${s.notes?' · '+s.notes:''}</div>
               </div>
               <span class="badge badge-${s.status}">${STATUS_LABELS[s.status]}</span>
             </div>`;
@@ -546,12 +565,13 @@
 
   // ── Session modal ─────────────────────────────────────────────────────
   function openAdd(ds) {
-    editId = null; selStatus = 'agendada';
+    editId = null; selStatus = 'agendada'; selGroup = '';
     document.getElementById('modalTitle').textContent = 'Nova Aula';
     document.getElementById('fDate').value = ds || `${curYear}-${String(curMonth+1).padStart(2,'0')}-01`;
     document.getElementById('fTime').value = '05:00';
     document.getElementById('fNotes').value = '';
     setStatusUI('agendada');
+    setGroupUI();
     document.getElementById('modalActions').innerHTML = `
       <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-save" onclick="saveSession()">Salvar</button>`;
@@ -561,12 +581,13 @@
   function openEdit(id) {
     const s = sessions.find(x => x.id===id);
     if (!s) return;
-    editId = id; selStatus = s.status;
+    editId = id; selStatus = s.status; selGroup = s.group||'';
     document.getElementById('modalTitle').textContent = 'Editar Aula';
     document.getElementById('fDate').value  = s.date;
     document.getElementById('fTime').value  = s.time;
     document.getElementById('fNotes').value = s.notes||'';
     setStatusUI(s.status);
+    setGroupUI();
     document.getElementById('modalActions').innerHTML = `
       <button class="btn btn-delete" onclick="delSession(${id})">Excluir</button>
       <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -583,6 +604,17 @@
     });
   }
 
+  const GROUPS = { 'Superior':'grp-superior', 'Inferior':'grp-inferior', 'Full Body':'grp-fullbody', 'Cardio':'grp-cardio' };
+  function pickGroup(g) {
+    selGroup = selGroup===g ? '' : g; // toggle
+    setGroupUI();
+  }
+  function setGroupUI() {
+    Object.entries(GROUPS).forEach(([g, id]) => {
+      document.getElementById(id).className = 'group-chip' + (selGroup===g ? ' sel' : '');
+    });
+  }
+
   async function saveSession() {
     const date  = document.getElementById('fDate').value;
     const time  = document.getElementById('fTime').value || '05:00';
@@ -591,10 +623,10 @@
 
     if (editId) {
       const i = sessions.findIndex(s => s.id===editId);
-      if (i>=0) sessions[i] = { ...sessions[i], date, time, status:selStatus, notes };
+      if (i>=0) sessions[i] = { ...sessions[i], date, time, status:selStatus, notes, group:selGroup };
     } else {
       const newId = (sessions.reduce((m,s) => Math.max(m,s.id), 0)) + 1;
-      sessions.push({ id:newId, date, time, status:selStatus, notes, pkgId:currentPkgId() });
+      sessions.push({ id:newId, date, time, status:selStatus, notes, group:selGroup, pkgId:currentPkgId() });
     }
 
     closeModal();
