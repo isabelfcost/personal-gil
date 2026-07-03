@@ -602,7 +602,7 @@
 
     // Progress — pacote atual de 12
     const ms = monthSessions();
-    const total = sessions.length;
+    const total = sessions.filter(s => s.status !== 'remarcada').length;
     const inPkg = total % TARGET; // posição dentro do pacote atual
     const isComplete = total > 0 && inPkg === 0;
     const current = isComplete ? TARGET : inPkg;
